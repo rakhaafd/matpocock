@@ -1,6 +1,7 @@
 import { formatRupiah } from "@/services/financial";
 import { Sparkles, CheckCircle2, Calendar } from "lucide-react";
 import { GoalStatus } from "@prisma/client";
+import { DepositModal } from "./DepositModal";
 
 export interface GoalCardProps {
   goal: {
@@ -14,14 +15,15 @@ export interface GoalCardProps {
     status: GoalStatus;
     targetDate: string | null;
   };
+  freeCash?: number;
 }
 
-export function GoalCard({ goal }: GoalCardProps) {
+export function GoalCard({ goal, freeCash = 0 }: GoalCardProps) {
   const isCompleted = goal.status === GoalStatus.ACHIEVED || goal.percentage >= 100;
 
   return (
     <div
-      className={`p-4 rounded-2xl border transition relative overflow-hidden flex flex-col justify-between h-44 ${
+      className={`p-4 rounded-2xl border transition relative overflow-hidden flex flex-col justify-between ${
         isCompleted
           ? "bg-emerald-950/30 border-emerald-500/40"
           : "bg-slate-900/90 border-slate-800 hover:border-slate-700"
@@ -55,7 +57,7 @@ export function GoalCard({ goal }: GoalCardProps) {
       </div>
 
       {/* Title & Target */}
-      <div className="my-2">
+      <div className="my-2.5">
         <h4 className="text-sm font-bold text-white truncate leading-tight">
           {goal.title}
         </h4>
@@ -86,6 +88,15 @@ export function GoalCard({ goal }: GoalCardProps) {
             </span>
           )}
         </div>
+
+        {/* Deposit Button */}
+        {!isCompleted && (
+          <DepositModal
+            goalId={goal.id}
+            goalTitle={goal.title}
+            freeCash={freeCash}
+          />
+        )}
       </div>
     </div>
   );

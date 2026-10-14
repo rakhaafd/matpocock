@@ -74,7 +74,7 @@ export default async function GoalsPage() {
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {goals.map((goal) => (
-              <GoalCard key={goal.id} goal={goal} />
+              <GoalCard key={goal.id} goal={goal} freeCash={data.freeCash || 0} />
             ))}
           </div>
         )}

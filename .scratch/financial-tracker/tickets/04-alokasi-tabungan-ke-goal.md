@@ -5,12 +5,12 @@ Pengguna dapat menyisihkan uang dari Saldo Bebas Belanja ke suatu barang impian 
 
 **Blocked by:** 02 (Kartu Hero Saldo dan Pencatatan Transaksi Cepat), 03 (Katalog Barang Impian dan Form Tambah Goal Baru)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 ## Acceptance Criteria
 
-- [ ] Pada setiap kartu barang impian, terdapat aksi/tombol untuk menyisihkan dana (deposit tabungan).
-- [ ] Validasi Saldo: Jika nominal alokasi $> \text{Free Cash Balance}$, tombol submit diblokir di UI dan API melempar error penolakan *"Saldo bebas belanja tidak mencukupi"*.
-- [ ] Berhasil menyimpan deposit ke tabel `GoalDeposit` dan langsung memperbarui akumulasi tabungan goal.
-- [ ] Dampak Saldo: Saldo Bebas Belanja berkurang sebesar nominal deposit, sementara Total Kas Riil tetap sama.
-- [ ] Pengujian otomatis memverifikasi invarian alokasi tabungan dan penolakan saat terjadi over-allocation.
+- [x] Pada setiap kartu barang impian, terdapat aksi/tombol untuk menyisihkan dana (deposit tabungan).
+- [x] Validasi Saldo: Jika nominal alokasi $> \text{Free Cash Balance}$, tombol submit diblokir di UI dan API melempar error penolakan *"Saldo bebas belanja tidak mencukupi"*.
+- [x] Berhasil menyimpan deposit ke tabel `GoalDeposit` dan langsung memperbarui akumulasi tabungan goal.
+- [x] Dampak Saldo: Saldo Bebas Belanja berkurang sebesar nominal deposit, sementara Total Kas Riil tetap sama.
+- [x] Pengujian otomatis memverifikasi invarian alokasi tabungan dan penolakan saat terjadi over-allocation.

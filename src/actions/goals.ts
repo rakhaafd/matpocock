@@ -46,9 +46,32 @@ export async function getGoalsData() {
       };
     });
 
+    // Hitung Saldo Bebas Belanja
+    const allTransactions = await prisma.transaction.findMany({
+      where: { userId: user.id },
+      select: { type: true, amount: true },
+    });
+
+    const activeReservedSavings = goals
+      .filter((g) => g.status === GoalStatus.IN_PROGRESS)
+      .reduce((sum, g) => {
+        return sum + g.deposits.reduce((dSum, d) => dSum + Number(d.amount), 0);
+      }, 0);
+
+    const totalIncome = allTransactions
+      .filter((t) => t.type === "INCOME")
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+
+    const totalExpense = allTransactions
+      .filter((t) => t.type === "EXPENSE")
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+
+    const freeCash = totalIncome - totalExpense - activeReservedSavings;
+
     return {
       success: true,
       goals: formattedGoals,
+      freeCash,
     };
   } catch (error) {
     console.error("Gagal mengambil data goals:", error);
