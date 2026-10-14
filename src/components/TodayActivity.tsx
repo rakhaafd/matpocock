@@ -1,5 +1,6 @@
 import { formatRupiah } from "@/services/financial";
 import { TransactionType } from "@prisma/client";
+import Link from "next/link";
 import { ArrowDownLeft, ArrowUpRight, Receipt } from "lucide-react";
 
 interface TodayTransactionItem {
@@ -24,9 +25,12 @@ export function TodayActivity({ transactions }: TodayActivityProps) {
         <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
           Aktivitas Hari Ini
         </span>
-        <span className="text-xs text-emerald-400 font-medium cursor-pointer">
+        <Link
+          href="/history"
+          className="text-xs text-emerald-400 hover:text-emerald-300 font-medium transition"
+        >
           Lihat Riwayat
-        </span>
+        </Link>
       </div>
 
       {transactions.length === 0 ? (
