@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PROTOTYPE - Mobile UI Personal Finance & Dream Goals</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { background-color: #0f172a; color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .mobile-frame { width: 100%; max-width: 420px; height: 860px; border-radius: 40px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); overflow: hidden; display: flex; flex-direction: column; position: relative; border: 8px solid #1e293b; background: #090d16; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+  <!-- Mobile Device Simulation Frame -->
+  <div class="mobile-frame">
+    <!-- Status Bar -->
+    <div class="h-8 w-full flex items-center justify-between px-6 text-xs text-slate-400 select-none pt-2 z-10">
+      <span id="clock">09:41</span>
+      <div class="flex items-center space-x-2">
+        <i class="fa-solid fa-signal text-[10px]"></i>
+        <i class="fa-solid fa-wifi text-[10px]"></i>
+        <i class="fa-solid fa-battery-full text-[12px]"></i>
+      </div>
+    </div>
+
+    <!-- Active Variant Container -->
+    <div id="variant-container" class="flex-1 overflow-y-auto no-scrollbar pb-20">
+      <!-- Injected via JavaScript based on active variant -->
+    </div>
+
+    <!-- Bottom Navigation Bar (Persistent) -->
+    <div class="absolute bottom-0 left-0 right-0 h-16 bg-slate-900/90 backdrop-blur-md border-t border-slate-800 flex items-center justify-around px-4 z-20">
+      <button onclick="setTab('home')" class="nav-btn flex flex-col items-center text-emerald-400 text-xs">
+        <i class="fa-solid fa-wallet text-lg mb-1"></i>
+        <span>Dompet</span>
+      </button>
+      <button onclick="setTab('goals')" class="nav-btn flex flex-col items-center text-slate-400 hover:text-emerald-400 text-xs">
+        <i class="fa-solid fa-bullseye text-lg mb-1"></i>
+        <span>Impian</span>
+      </button>
+      <button onclick="setTab('history')" class="nav-btn flex flex-col items-center text-slate-400 hover:text-emerald-400 text-xs">
+        <i class="fa-solid fa-receipt text-lg mb-1"></i>
+        <span>Riwayat</span>
+      </button>
+      <button onclick="setTab('stats')" class="nav-btn flex flex-col items-center text-slate-400 hover:text-emerald-400 text-xs">
+        <i class="fa-solid fa-chart-pie text-lg mb-1"></i>
+        <span>Laporan</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- FLOATING PROTOTYPE SWITCHER (Matt Pocock Spec) -->
+  <div class="fixed bottom-6 z-50 flex items-center bg-slate-900/95 border border-emerald-500/30 text-white rounded-full shadow-2xl px-4 py-2 space-x-4 backdrop-blur-md">
+    <button onclick="cycleVariant(-1)" class="p-2 hover:bg-slate-800 rounded-full transition" title="Variasi Sebelumnya (←)">
+      <i class="fa-solid fa-arrow-left"></i>
+    </button>
+    <div class="text-center min-w-[240px]">
+      <div class="text-[10px] text-emerald-400 uppercase tracking-wider font-semibold">PROTOTYPE VARIANT SWITCHER</div>
+      <div id="variant-label" class="text-sm font-bold text-slate-200">Loading...</div>
+    </div>
+    <button onclick="cycleVariant(1)" class="p-2 hover:bg-slate-800 rounded-full transition" title="Variasi Berikutnya (→)">
+      <i class="fa-solid fa-arrow-right"></i>
+    </button>
+  </div>
+
+  <!-- State & Variant Render Script -->
+  <script>
+    // In-memory State
+    let state = {
+      totalCash: 3500000,
+      reservedSavings: 1200000,
+      activeTab: 'home',
+      goals: [
+        { id: 1, title: 'Sony WH-1000XM5', target: 4500000, saved: 2700000, icon: 'headphones', color: 'from-blue-500 to-indigo-600' },
+        { id: 2, title: 'iPad Air M2', target: 11000000, saved: 3200000, icon: 'tablet', color: 'from-purple-500 to-pink-600' }
+      ],
+      transactions: [
+        { id: 1, title: 'Makan Siang Nasi Padang', amount: -35000, category: 'Makanan', time: '12:30', type: 'EXPENSE' },
+        { id: 2, title: 'Kopi Susu Gula Aren', amount: -22000, category: 'Minuman', time: '10:15', type: 'EXPENSE' },
+        { id: 3, title: 'Bonus Project Freelance', amount: 1500000, category: 'Pendapatan', time: 'Kemarin', type: 'INCOME' }
+      ]
+    };
+
+    function formatRupiah(num) {
+      return 'Rp ' + num.toLocaleString('id-ID');
+    }
+
+    const variants = [
+      {
+        id: 'A',
+        name: 'Varian A: Minimalist & Fast Quick-Add',
+        description: 'Fokus pada kecepatan catat pengeluaran harian (< 3 detik) & saldo bebas belanja di atas.',
+        render: () => {
+          const freeCash = state.totalCash - state.reservedSavings;
+          return `
+            <div class="p-5 space-y-5">
+              <!-- Header -->
+              <div class="flex justify-between items-center">
+                <div>
+                  <div class="text-xs text-slate-400">Selamat Sore,</div>
+                  <div class="font-bold text-lg text-white">Rakha 👋</div>
+                </div>
+                <div class="h-9 w-9 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">
+                  R
+                </div>
+              </div>
+
+              <!-- Main Hero Card: Saldo Bebas -->
+              <div class="bg-gradient-to-br from-emerald-600 to-teal-800 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+                <div class="text-xs uppercase tracking-wider text-emerald-200 font-medium">Saldo Aman Dibelanjakan</div>
+                <div class="text-3xl font-extrabold mt-1 tracking-tight">${formatRupiah(freeCash)}</div>
+                <div class="mt-4 pt-3 border-t border-emerald-500/30 flex justify-between text-xs text-emerald-100">
+                  <span>Total Uang Kas: <b>${formatRupiah(state.totalCash)}</b></span>
+                  <span>Disimpan di Goal: <b>${formatRupiah(state.reservedSavings)}</b></span>
+                </div>
+              </div>
+
+              <!-- Quick Add Action Bar (2 Taps) -->
+              <div>
+                <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Catat Cepat Pengeluaran</div>
+                <div class="grid grid-cols-4 gap-2">
+                  <button onclick="quickAdd('Makan Siang', 25000)" class="bg-slate-800/80 hover:bg-slate-700 p-2.5 rounded-xl flex flex-col items-center text-center text-xs transition border border-slate-700/50">
+                    <span class="text-base mb-1">🍛</span>
+                    <span class="text-[11px] font-medium text-slate-200">Makan</span>
+                    <span class="text-[9px] text-slate-400">25rb</span>
+                  </button>
+                  <button onclick="quickAdd('Kopi / Minum', 18000)" class="bg-slate-800/80 hover:bg-slate-700 p-2.5 rounded-xl flex flex-col items-center text-center text-xs transition border border-slate-700/50">
+                    <span class="text-base mb-1">☕</span>
+                    <span class="text-[11px] font-medium text-slate-200">Kopi</span>
+                    <span class="text-[9px] text-slate-400">18rb</span>
+                  </button>
+                  <button onclick="quickAdd('Transport / Bensin', 20000)" class="bg-slate-800/80 hover:bg-slate-700 p-2.5 rounded-xl flex flex-col items-center text-center text-xs transition border border-slate-700/50">
+                    <span class="text-base mb-1">🛵</span>
+                    <span class="text-[11px] font-medium text-slate-200">Bensin</span>
+                    <span class="text-[9px] text-slate-400">20rb</span>
+                  </button>
+                  <button onclick="promptCustomTransaction()" class="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 p-2.5 rounded-xl flex flex-col items-center text-center text-xs transition border border-emerald-500/30">
+                    <i class="fa-solid fa-plus text-base mb-1"></i>
+                    <span class="text-[11px] font-medium">Lainnya</span>
+                    <span class="text-[9px] text-emerald-300">Kustom</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Top Dream Goal Widget -->
+              <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+                <div class="flex justify-between items-center mb-2">
+                  <div class="flex items-center space-x-2">
+                    <div class="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs">
+                      <i class="fa-solid fa-headphones"></i>
+                    </div>
+                    <div>
+                      <div class="text-xs text-slate-400">Target Terdekat</div>
+                      <div class="text-sm font-bold text-white">${state.goals[0].title}</div>
+                    </div>
+                  </div>
+                  <button onclick="depositGoal(1, 50000)" class="text-[11px] bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-2.5 py-1 rounded-lg transition">
+                    + Tabung 50rb
+                  </button>
+                </div>
+                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden mt-2">
+                  <div class="bg-gradient-to-r from-blue-500 to-indigo-500 h-full" style="width: ${(state.goals[0].saved / state.goals[0].target * 100).toFixed(0)}%"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-slate-400 mt-1.5 font-medium">
+                  <span>${formatRupiah(state.goals[0].saved)}</span>
+                  <span>${(state.goals[0].saved / state.goals[0].target * 100).toFixed(0)}% dari ${formatRupiah(state.goals[0].target)}</span>
+                </div>
+              </div>
+
+              <!-- Transaksi Terkini -->
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Aktivitas Hari Ini</span>
+                  <span class="text-xs text-emerald-400 font-medium">Lihat Semua</span>
+                </div>
+                <div class="space-y-2">
+                  ${state.transactions.map(t => `
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800/80">
+                      <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-full ${t.type === 'INCOME' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'} flex items-center justify-center text-sm">
+                          <i class="fa-solid ${t.type === 'INCOME' ? 'fa-arrow-down' : 'fa-arrow-up'}"></i>
+                        </div>
+                        <div>
+                          <div class="text-sm font-semibold text-white leading-tight">${t.title}</div>
+                          <div class="text-[11px] text-slate-400">${t.category} • ${t.time}</div>
+                        </div>
+                      </div>
+                      <div class="font-bold text-sm ${t.type === 'INCOME' ? 'text-emerald-400' : 'text-slate-200'}">
+                        ${t.type === 'INCOME' ? '+' : ''}${formatRupiah(t.amount)}
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      },
+      {
+        id: 'B',
+        name: 'Varian B: Dual-Envelope (Goals Front & Center)',
+        description: 'Tampilan split 50/50 antara Saldo Kas Harian dan Tabungan Impian, dengan kartu interaktif goal.',
+        render: () => {
+          const freeCash = state.totalCash - state.reservedSavings;
+          return `
+            <div class="p-5 space-y-5">
+              <!-- Split Balances Header -->
+              <div class="grid grid-cols-2 gap-3">
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+                  <div class="text-[10px] text-emerald-400 uppercase font-bold tracking-wider">Saldo Bebas</div>
+                  <div class="text-xl font-extrabold text-white mt-1">${formatRupiah(freeCash)}</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Siap jajan hari ini</div>
+                </div>
+                <div class="bg-slate-900 border border-indigo-500/30 p-4 rounded-2xl relative overflow-hidden">
+                  <div class="text-[10px] text-indigo-400 uppercase font-bold tracking-wider">Dana Impian</div>
+                  <div class="text-xl font-extrabold text-indigo-200 mt-1">${formatRupiah(state.reservedSavings)}</div>
+                  <div class="text-[10px] text-indigo-300 mt-1">Terkunci di 2 Goal</div>
+                </div>
+              </div>
+
+              <!-- Interactive Goals Slider / Grid -->
+              <div>
+                <div class="flex justify-between items-center mb-3">
+                  <div class="text-sm font-bold text-white flex items-center space-x-1.5">
+                    <span>🎯</span>
+                    <span>Progres Barang Impian</span>
+                  </div>
+                  <button onclick="promptNewGoal()" class="text-xs text-indigo-400 font-semibold">+ Tambah Goal</button>
+                </div>
+                <div class="space-y-3">
+                  ${state.goals.map(g => {
+                    const percent = Math.min(100, (g.saved / g.target * 100)).toFixed(0);
+                    return `
+                      <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl relative overflow-hidden">
+                        <div class="flex justify-between items-start">
+                          <div>
+                            <div class="font-bold text-white text-base">${g.title}</div>
+                            <div class="text-xs text-slate-400 mt-0.5">Target: ${formatRupiah(g.target)}</div>
+                          </div>
+                          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                            ${percent}%
+                          </span>
+                        </div>
+                        <!-- Progress Bar -->
+                        <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden my-3">
+                          <div class="bg-gradient-to-r ${g.color} h-full transition-all duration-500" style="width: ${percent}%"></div>
+                        </div>
+                        <!-- Actions -->
+                        <div class="flex justify-between items-center text-xs">
+                          <span class="text-slate-300 font-semibold">${formatRupiah(g.saved)}</span>
+                          <div class="flex space-x-1.5">
+                            <button onclick="depositGoal(${g.id}, 25000)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2 py-1 rounded-lg text-[11px] border border-slate-700">
+                              +25rb
+                            </button>
+                            <button onclick="depositGoal(${g.id}, 100000)" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-2.5 py-1 rounded-lg text-[11px]">
+                              +100rb
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+
+              <!-- Quick Log Bar -->
+              <div class="bg-gradient-to-r from-emerald-950/60 to-slate-900 border border-emerald-500/20 p-4 rounded-2xl flex justify-between items-center">
+                <div>
+                  <div class="text-xs font-bold text-white">Barusan belanja sesuatu?</div>
+                  <div class="text-[11px] text-slate-400">Catat transaksi dalam 3 detik</div>
+                </div>
+                <button onclick="promptCustomTransaction()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-3.5 py-2 rounded-xl flex items-center space-x-1.5 shadow-md">
+                  <i class="fa-solid fa-plus"></i>
+                  <span>Catat</span>
+                </button>
+              </div>
+            </div>
+          `;
+        }
+      },
+      {
+        id: 'C',
+        name: 'Varian C: Modern FinTech Card & Category Icons',
+        description: 'Tampilan bergaya aplikasi FinTech modern dengan visual kartu kredit digital dan grid kategori berwarna.',
+        render: () => {
+          const freeCash = state.totalCash - state.reservedSavings;
+          return `
+            <div class="p-5 space-y-5">
+              <!-- Digital Card Visual -->
+              <div class="h-48 w-full rounded-3xl bg-gradient-to-tr from-purple-700 via-indigo-700 to-emerald-600 p-5 flex flex-col justify-between shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-xl"></div>
+                <div class="flex justify-between items-center text-white/80 text-xs">
+                  <span class="tracking-widest font-mono uppercase">Personal Wealth</span>
+                  <i class="fa-solid fa-credit-card text-lg"></i>
+                </div>
+                <div>
+                  <div class="text-white/70 text-xs font-medium">Sisa Saldo Bebas Belanja</div>
+                  <div class="text-2xl font-black text-white tracking-wide mt-0.5">${formatRupiah(freeCash)}</div>
+                </div>
+                <div class="flex justify-between items-end text-white/90 text-xs border-t border-white/20 pt-2">
+                  <span>Tabungan Impian: <b>${formatRupiah(state.reservedSavings)}</b></span>
+                  <span class="font-mono text-[10px]">IDR • AKTIF</span>
+                </div>
+              </div>
+
+              <!-- Action Category Pills -->
+              <div class="flex items-center space-x-2 overflow-x-auto no-scrollbar pb-1">
+                <button onclick="quickAdd('Makan Siang', 30000)" class="flex-shrink-0 bg-slate-800 hover:bg-slate-700 text-xs px-3.5 py-2 rounded-full border border-slate-700 flex items-center space-x-1.5">
+                  <span>🍜 Makan</span>
+                </button>
+                <button onclick="quickAdd('Minum / Kopi', 20000)" class="flex-shrink-0 bg-slate-800 hover:bg-slate-700 text-xs px-3.5 py-2 rounded-full border border-slate-700 flex items-center space-x-1.5">
+                  <span>☕ Kopi</span>
+                </button>
+                <button onclick="quickAdd('Belanja Kebutuhan', 75000)" class="flex-shrink-0 bg-slate-800 hover:bg-slate-700 text-xs px-3.5 py-2 rounded-full border border-slate-700 flex items-center space-x-1.5">
+                  <span>🛒 Belanja</span>
+                </button>
+                <button onclick="quickAdd('Transportasi', 25000)" class="flex-shrink-0 bg-slate-800 hover:bg-slate-700 text-xs px-3.5 py-2 rounded-full border border-slate-700 flex items-center space-x-1.5">
+                  <span>🚗 Bensin</span>
+                </button>
+              </div>
+
+              <!-- Goals Horizontal Preview -->
+              <div>
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-xs font-bold uppercase text-slate-400">Wishlist Impian</span>
+                  <button onclick="setTab('goals')" class="text-xs text-indigo-400">Lihat Semua (${state.goals.length})</button>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  ${state.goals.map(g => `
+                    <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl flex flex-col justify-between h-32">
+                      <div class="flex justify-between items-start">
+                        <div class="w-8 h-8 rounded-xl bg-gradient-to-br ${g.color} text-white flex items-center justify-center text-xs">
+                          <i class="fa-solid fa-${g.icon}"></i>
+                        </div>
+                        <span class="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded">
+                          ${(g.saved/g.target*100).toFixed(0)}%
+                        </span>
+                      </div>
+                      <div>
+                        <div class="text-xs font-bold text-white truncate">${g.title}</div>
+                        <div class="text-[10px] text-slate-400">${formatRupiah(g.saved)}</div>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Recent Transactions Simple Table -->
+              <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+                <div class="text-xs font-bold text-slate-400 uppercase mb-3">Transaksi Terbaru</div>
+                <div class="space-y-3">
+                  ${state.transactions.slice(0, 2).map(t => `
+                    <div class="flex justify-between items-center text-xs">
+                      <div>
+                        <div class="font-medium text-white">${t.title}</div>
+                        <div class="text-[10px] text-slate-500">${t.category}</div>
+                      </div>
+                      <div class="font-bold ${t.type === 'INCOME' ? 'text-emerald-400' : 'text-slate-300'}">
+                        ${formatRupiah(t.amount)}
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      }
+    ];
+
+    let currentVariantIdx = 0;
+
+    function renderCurrentVariant() {
+      const v = variants[currentVariantIdx];
+      document.getElementById('variant-label').innerHTML = `
+        <span class="text-emerald-400 font-bold">${v.id}</span> - ${v.name.split(':')[1]}
+      `;
+      document.getElementById('variant-container').innerHTML = v.render();
+      
+      // Update URL search param without reload
+      const url = new URL(window.location);
+      url.searchParams.set('variant', v.id);
+      window.history.replaceState({}, '', url);
+    }
+
+    function cycleVariant(direction) {
+      currentVariantIdx = (currentVariantIdx + direction + variants.length) % variants.length;
+      renderCurrentVariant();
+    }
+
+    function quickAdd(title, amount) {
+      state.totalCash -= amount;
+      state.transactions.unshift({
+        id: Date.now(),
+        title: title,
+        amount: -amount,
+        category: 'Pengeluaran Cepat',
+        time: 'Baru saja',
+        type: 'EXPENSE'
+      });
+      renderCurrentVariant();
+    }
+
+    function depositGoal(goalId, amount) {
+      const goal = state.goals.find(g => g.id === goalId);
+      if (goal) {
+        goal.saved += amount;
+        state.reservedSavings += amount;
+        renderCurrentVariant();
+      }
+    }
+
+    function promptCustomTransaction() {
+      const title = prompt("Nama Pengeluaran / Pemasukan:", "Makan Siang");
+      if (!title) return;
+      const nominalStr = prompt("Nominal Uang (Rp):", "50000");
+      const amount = parseInt(nominalStr, 10);
+      if (isNaN(amount) || amount <= 0) return;
+
+      state.totalCash -= amount;
+      state.transactions.unshift({
+        id: Date.now(),
+        title: title,
+        amount: -amount,
+        category: 'Umum',
+        time: 'Baru saja',
+        type: 'EXPENSE'
+      });
+      renderCurrentVariant();
+    }
+
+    function promptNewGoal() {
+      const title = prompt("Nama Barang Impian:", "PlayStation 5");
+      if (!title) return;
+      const targetStr = prompt("Target Harga (Rp):", "8500000");
+      const target = parseInt(targetStr, 10);
+      if (isNaN(target) || target <= 0) return;
+
+      state.goals.push({
+        id: Date.now(),
+        title: title,
+        target: target,
+        saved: 0,
+        icon: 'gamepad',
+        color: 'from-amber-500 to-red-600'
+      });
+      renderCurrentVariant();
+    }
+
+    function setTab(tab) {
+      state.activeTab = tab;
+      alert("Tab '" + tab + "' diklik (Prototype simulasi navigasi).");
+    }
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === 'ArrowLeft') cycleVariant(-1);
+      if (e.key === 'ArrowRight') cycleVariant(1);
+    });
+
+    // Read initial variant from query param
+    const initialParam = new URLSearchParams(window.location.search).get('variant');
+    if (initialParam) {
+      const foundIdx = variants.findIndex(v => v.id.toUpperCase() === initialParam.toUpperCase());
+      if (foundIdx !== -1) currentVariantIdx = foundIdx;
+    }
+
+    renderCurrentVariant();
+
+    // Clock updater
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById('clock').innerText = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    }, 1000);
+  </script>
+</body>
+</html>
