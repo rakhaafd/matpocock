@@ -10,6 +10,7 @@ export function BottomNav() {
   const isHome = pathname === "/";
   const isGoals = pathname === "/goals";
   const isHistory = pathname === "/history";
+  const isReports = pathname === "/reports";
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/90 backdrop-blur-lg border-t border-slate-800/80 py-2">
@@ -44,13 +45,15 @@ export function BottomNav() {
           <span className="text-[10px]">Riwayat</span>
         </Link>
 
-        <button
-          onClick={() => alert("Tab Laporan Keuangan akan segera hadir.")}
-          className="flex flex-col items-center py-1 px-3 text-slate-400 hover:text-white transition font-medium"
+        <Link
+          href="/reports"
+          className={`flex flex-col items-center py-1 px-3 transition ${
+            isReports ? "text-indigo-400 font-bold" : "text-slate-400 hover:text-white font-medium"
+          }`}
         >
           <PieChart className="w-5 h-5 mb-0.5" />
           <span className="text-[10px]">Laporan</span>
-        </button>
+        </Link>
       </div>
     </div>
   );
