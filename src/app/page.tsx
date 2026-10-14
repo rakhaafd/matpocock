@@ -1,79 +1,64 @@
-import { prisma } from "@/lib/prisma";
-import { CheckCircle2, Database, Sparkles } from "lucide-react";
+import { getDashboardData } from "@/actions/transactions";
+import { HeroCard } from "@/components/HeroCard";
+import { QuickCategories } from "@/components/QuickCategories";
+import { TransactionModal } from "@/components/TransactionModal";
+import { TodayActivity } from "@/components/TodayActivity";
+import { BottomNav } from "@/components/BottomNav";
+import { Database } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  let dbStatus = "Connecting...";
-  let userCount = 0;
-  let categoryCount = 0;
-  let isConnected = false;
+  const data = await getDashboardData();
 
-  try {
-    userCount = await prisma.user.count();
-    categoryCount = await prisma.category.count();
-    isConnected = true;
-    dbStatus = "Database Terhubung";
-  } catch (error) {
-    dbStatus = "Database belum aktif / menunggu koneksi";
-    console.error("DB connection check error:", error);
+  if (!data.success) {
+    return (
+      <div className="p-6 flex flex-col items-center justify-center min-h-[80vh] text-center space-y-5">
+        <div className="w-14 h-14 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+          <Database className="w-7 h-7" />
+        </div>
+        <div className="space-y-1">
+          <h2 className="text-xl font-bold text-white">Menunggu Koneksi PostgreSQL</h2>
+          <p className="text-xs text-slate-400 max-w-xs">
+            Pastikan kontainer PostgreSQL telah berjalan via <code>docker compose up -d</code> atau file <code>.env</code> terisi DATABASE_URL yang valid.
+          </p>
+        </div>
+        <div className="text-xs text-slate-500 bg-slate-900 border border-slate-800 p-3 rounded-xl font-mono">
+          docker compose up -d
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-6 flex flex-col items-center justify-center min-h-[80vh] text-center space-y-6">
-      <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-700 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-        <Sparkles className="w-8 h-8 text-white" />
-      </div>
-
-      <div className="space-y-2">
-        <h1 className="text-2xl font-extrabold text-white tracking-tight">
-          Personal Finance & Dream Goals
-        </h1>
-        <p className="text-sm text-slate-400">
-          Proyek Next.js App Router & Prisma PostgreSQL telah siap.
-        </p>
-      </div>
-
-      <div className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-5 text-left space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2 text-sm font-semibold text-white">
-            <Database className="w-4 h-4 text-emerald-400" />
-            <span>Status PostgreSQL</span>
+    <div className="p-5 space-y-6">
+      {/* Top Bar Greeting */}
+      <div className="flex justify-between items-center pt-2">
+        <div>
+          <div className="text-xs text-slate-400">Selamat Datang,</div>
+          <div className="font-extrabold text-lg text-white tracking-tight">
+            {data.user?.name || "Personal User"} 👋
           </div>
-          <span
-            className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${
-              isConnected
-                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-            }`}
-          >
-            {isConnected ? "ONLINE" : "PENDING"}
-          </span>
         </div>
-
-        <div className="text-xs text-slate-400 border-t border-slate-800/80 pt-3 space-y-1.5">
-          <div className="flex justify-between">
-            <span>Kondisi Koneksi:</span>
-            <span className="text-slate-200 font-medium">{dbStatus}</span>
-          </div>
-          {isConnected && (
-            <>
-              <div className="flex justify-between">
-                <span>Pengguna Terdaftar:</span>
-                <span className="text-slate-200 font-medium">{userCount} User</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Kategori Bawaan:</span>
-                <span className="text-slate-200 font-medium">{categoryCount} Kategori</span>
-              </div>
-            </>
-          )}
+        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-600 text-slate-950 flex items-center justify-center font-black text-sm shadow-md">
+          {data.user?.name ? data.user.name.charAt(0) : "U"}
         </div>
       </div>
 
-      <div className="text-xs text-slate-500">
-        Tiket 01 Foundation • Siap untuk Tiket 02 (Pencatatan Transaksi & Saldo)
-      </div>
+      {/* Hero FinTech Card */}
+      <HeroCard balance={data.balance} />
+
+      {/* Quick 1-Tap Category Pills */}
+      <QuickCategories categories={data.categories} />
+
+      {/* Main Action Button for Custom Transaction */}
+      <TransactionModal categories={data.categories} />
+
+      {/* Today Activity Stream */}
+      <TodayActivity transactions={data.todayTransactions} />
+
+      {/* Persistent Bottom Nav */}
+      <BottomNav />
     </div>
   );
 }
