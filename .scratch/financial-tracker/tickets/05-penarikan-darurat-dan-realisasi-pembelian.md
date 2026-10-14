@@ -7,15 +7,15 @@ Dua fitur siklus hidup tabungan impian:
 
 **Blocked by:** 04 (Alokasi Tabungan ke Goal dengan Validasi Saldo Bebas)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 ## Acceptance Criteria
 
-- [ ] Pengguna dapat melakukan penarikan dana (*withdraw*) dari goal aktif; dana kembali ke Saldo Bebas Belanja dan tercatat sebagai entri negatif di `GoalDeposit`.
-- [ ] Goal yang tabungannya $\ge 100\%$ menampilkan indikator visual selesai dan tombol aksi "Beli Sekarang".
-- [ ] Mengklik "Beli Sekarang" memicu transaksi database atomik:
+- [x] Pengguna dapat melakukan penarikan dana (*withdraw*) dari goal aktif; dana kembali ke Saldo Bebas Belanja dan tercatat sebagai entri negatif di `GoalDeposit`.
+- [x] Goal yang tabungannya $\ge 100\%$ menampilkan indikator visual selesai dan tombol aksi "Beli Sekarang".
+- [x] Mengklik "Beli Sekarang" memicu transaksi database atomik:
   1. `DreamGoal.status` menjadi `ACHIEVED` dan `achievedAt` tercatat.
   2. Sebuah record `Transaction` baru bertipe `EXPENSE` terbuat dengan nominal sebesar tabungan yang terkumpul, kategori *"Barang Impian"*, dan catatan nama barang.
-- [ ] Saldo Bebas Belanja tidak berkurang ganda saat realisasi pembelian dieksekusi (*no double deduction*).
-- [ ] Goal yang telah berstatus `ACHIEVED` pindah ke bagian arsip/selesai.
-- [ ] Pengujian otomatis memverifikasi end-to-end flow dari realisasi goal hingga terbitnya transaksi pengeluaran.
+- [x] Saldo Bebas Belanja tidak berkurang ganda saat realisasi pembelian dieksekusi (*no double deduction*).
+- [x] Goal yang telah berstatus `ACHIEVED` pindah ke bagian arsip/selesai.
+- [x] Pengujian otomatis memverifikasi end-to-end flow dari realisasi goal hingga terbitnya transaksi pengeluaran.

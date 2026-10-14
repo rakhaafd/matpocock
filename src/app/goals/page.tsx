@@ -3,16 +3,19 @@ import { GoalCard } from "@/components/GoalCard";
 import { CreateGoalModal } from "@/components/CreateGoalModal";
 import { BottomNav } from "@/components/BottomNav";
 import { formatRupiah } from "@/services/financial";
-import { Target, Sparkles, Inbox } from "lucide-react";
+import { Target, Sparkles, Inbox, CheckCircle2 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export default async function GoalsPage() {
   const data = await getGoalsData();
-  const goals = data.goals || [];
+  const allGoals = data.goals || [];
 
-  const totalTarget = goals.reduce((acc, g) => acc + g.targetAmount, 0);
-  const totalSaved = goals.reduce((acc, g) => acc + g.savedAmount, 0);
+  const activeGoals = allGoals.filter((g) => g.status === "IN_PROGRESS");
+  const achievedGoals = allGoals.filter((g) => g.status === "ACHIEVED");
+
+  const totalTarget = activeGoals.reduce((acc, g) => acc + g.targetAmount, 0);
+  const totalSaved = activeGoals.reduce((acc, g) => acc + g.savedAmount, 0);
   const overallPercentage = totalTarget > 0 ? Math.round((totalSaved / totalTarget) * 100) : 0;
 
   return (
@@ -55,30 +58,46 @@ export default async function GoalsPage() {
       {/* Modal Tambah Goal */}
       <CreateGoalModal />
 
-      {/* Goals 2-Column Grid */}
+      {/* Active Goals Grid */}
       <div className="space-y-3">
         <div className="flex justify-between items-center">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-            Daftar Impian Aktif ({goals.length})
+            Daftar Impian Aktif ({activeGoals.length})
           </span>
         </div>
 
-        {goals.length === 0 ? (
+        {activeGoals.length === 0 ? (
           <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-8 text-center text-slate-400 space-y-2">
             <Inbox className="w-8 h-8 mx-auto text-slate-600" />
-            <p className="text-xs">Belum ada barang impian yang didaftarkan.</p>
+            <p className="text-xs">Belum ada barang impian aktif yang didaftarkan.</p>
             <p className="text-[11px] text-slate-500">
               Mulai tambahkan target barang yang ingin kamu beli!
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
-            {goals.map((goal) => (
+            {activeGoals.map((goal) => (
               <GoalCard key={goal.id} goal={goal} freeCash={data.freeCash || 0} />
             ))}
           </div>
         )}
       </div>
+
+      {/* Achieved Goals Section */}
+      {achievedGoals.length > 0 && (
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center space-x-1.5 text-xs font-bold text-emerald-400 uppercase tracking-wider">
+            <CheckCircle2 className="w-4 h-4" />
+            <span>Impian yang Sudah Terbeli ({achievedGoals.length})</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {achievedGoals.map((goal) => (
+              <GoalCard key={goal.id} goal={goal} freeCash={data.freeCash || 0} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Persistent Bottom Navigation */}
       <BottomNav />
