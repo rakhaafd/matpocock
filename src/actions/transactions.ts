@@ -141,11 +141,18 @@ export async function getDashboardData() {
       })),
       goals: goalsWithProgress,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gagal mengambil data dashboard:", error);
+    const isTableMissing =
+      error?.code === "P2021" ||
+      String(error?.message || "").includes("does not exist in the current database");
+
     return {
       success: false,
-      error: "Gagal menghubungkan ke database PostgreSQL",
+      errorType: isTableMissing ? ("TABLES_MISSING" as const) : ("CONNECTION_FAILED" as const),
+      error: isTableMissing
+        ? "Tabel database belum dibuat di PostgreSQL"
+        : "Gagal menghubungkan ke database PostgreSQL",
       balance: {
         totalIncome: 0,
         totalExpense: 0,

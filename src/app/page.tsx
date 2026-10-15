@@ -12,19 +12,25 @@ export default async function HomePage() {
   const data = await getDashboardData();
 
   if (!data.success) {
+    const isTableMissing = (data as any).errorType === "TABLES_MISSING";
+
     return (
       <div className="p-6 flex flex-col items-center justify-center min-h-[80vh] text-center space-y-5">
         <div className="w-14 h-14 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
           <Database className="w-7 h-7" />
         </div>
         <div className="space-y-1">
-          <h2 className="text-xl font-bold text-white">Menunggu Koneksi PostgreSQL</h2>
+          <h2 className="text-xl font-bold text-white">
+            {isTableMissing ? "Tabel Database Belum Dibuat" : "Menunggu Koneksi PostgreSQL"}
+          </h2>
           <p className="text-xs text-slate-400 max-w-xs">
-            Pastikan kontainer PostgreSQL telah berjalan via <code>docker compose up -d</code> atau file <code>.env</code> terisi DATABASE_URL yang valid.
+            {isTableMissing
+              ? "PostgreSQL terhubung, namun skema tabel Prisma belum di-push ke database ini."
+              : "Pastikan kontainer PostgreSQL telah berjalan via docker compose up -d atau file .env terisi DATABASE_URL yang valid."}
           </p>
         </div>
-        <div className="text-xs text-slate-500 bg-slate-900 border border-slate-800 p-3 rounded-xl font-mono">
-          docker compose up -d
+        <div className="text-xs text-emerald-400 bg-slate-900 border border-slate-800 p-3 rounded-xl font-mono">
+          {isTableMissing ? "pnpm db:push && pnpm db:seed" : "docker compose up -d"}
         </div>
       </div>
     );
